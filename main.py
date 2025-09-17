@@ -76,4 +76,4 @@ async def post_photo(request: Request, entry: Annotated[str, Form()], photo_uplo
         "photo_count": PHOTOS_PER_PAGE,
         "invalid_image_file": not valid_image_file
     }
-    return templates.TemplateResponse(name="photo_journal.html.jinja2", context=context, block_name="photos")
+    return templates.TemplateResponse(request, name="photo_journal.html.jinja2", context=context, block_name="photos")
