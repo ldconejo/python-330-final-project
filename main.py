@@ -15,15 +15,19 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Blocks(directory="templates")
 
+
 def get_db():
     return TinyDB("db.json")
 
+
 PHOTOS_PER_PAGE = 3
+
 
 def get_sorted_photos(all_photos, current_photo_count, new_photo_count):
     return sorted(all_photos,
                   key=lambda d: datetime.strptime(d["uploaded_at"], "%m/%d/%Y %I:%M:%S%p"),
                   reverse=True)[current_photo_count:new_photo_count]
+
 
 def resize_image_for_web(photo_file_path):
     image_file = Image.open(f"static/{photo_file_path}")
@@ -32,6 +36,7 @@ def resize_image_for_web(photo_file_path):
     if image_file.width < image_file.height and image_file.width > 900:
         image_file.thumbnail((900, 1200))
     image_file.save(f"static/{photo_file_path}")
+
 
 @app.get("/", response_class=HTMLResponse)
 def photo_journal(request: Request, db: TinyDB = Depends(get_db)):
@@ -43,6 +48,7 @@ def photo_journal(request: Request, db: TinyDB = Depends(get_db)):
     }
 
     return templates.TemplateResponse(name="photo_journal.html.jinja2", context=context)
+
 
 @app.post("/post-photo", response_class=HTMLResponse)
 async def post_photo(request: Request, entry: Annotated[str, Form()], photo_upload: UploadFile, db: TinyDB = Depends(get_db)):
@@ -70,5 +76,4 @@ async def post_photo(request: Request, entry: Annotated[str, Form()], photo_uplo
         "photo_count": PHOTOS_PER_PAGE,
         "invalid_image_file": not valid_image_file
     }
-    return templates.TemplateResponse(name="photo_journal.html.jinja2", context=context, block_name="photos")
-
+    return templates.TemplateResponse(request, name="photo_journal.html.jinja2", context=context, block_name="photos")
